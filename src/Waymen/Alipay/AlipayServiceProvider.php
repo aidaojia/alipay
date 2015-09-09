@@ -1,5 +1,5 @@
 <?php
-namespace Latrell\Alipay;
+namespace Waymen\Alipay;
 
 use Illuminate\Support\ServiceProvider;
 
