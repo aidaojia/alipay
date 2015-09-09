@@ -14,7 +14,11 @@ class AlipayServiceProvider extends ServiceProvider
 		$this->publishes([
 			__DIR__ . '/../../config/config.php' => config_path('latrell-alipay.php'),
 			__DIR__ . '/../../config/mobile.php' => config_path('latrell-alipay-mobile.php'),
-			__DIR__ . '/../../config/web.php' => config_path('latrell-alipay-web.php')
+			__DIR__ . '/../../config/web.php' => config_path('latrell-alipay-web.php'),
+			__DIR__ . '/../../config/refund.php' => config_path('latrell-alipay-refund.php'),
+			__DIR__ . '/../../config/key/private_key.pem' => config_path('key/private_key.pem'),
+			__DIR__ . '/../../config/key/public_key.pem' => config_path('key/public_key.pem'),
+			__DIR__ . '/../../config/key/cacert.pem' => config_path('key/cacert.pem'),
 		]);
 	}
 
@@ -28,6 +32,7 @@ class AlipayServiceProvider extends ServiceProvider
 		$this->mergeConfigFrom(__DIR__ . '/../../config/config.php', 'latrell-alipay');
 		$this->mergeConfigFrom(__DIR__ . '/../../config/mobile.php', 'latrell-alipay-mobile');
 		$this->mergeConfigFrom(__DIR__ . '/../../config/web.php', 'latrell-alipay-web');
+		$this->mergeConfigFrom(__DIR__ . '/../../config/refund.php', 'latrell-alipay-refund');
 
 		$this->app->bind('alipay.mobile', function ($app)
 		{
@@ -57,6 +62,20 @@ class AlipayServiceProvider extends ServiceProvider
 
 			return $alipay;
 		});
+
+		$this->app->bind('alipay.refund', function ($app)
+		{
+			$alipay = new Refund\SdkPayment();
+
+			$alipay->setPartner($app->config->get('latrell-alipay.partner_id'))
+				->setSellerId($app->config->get('latrell-alipay.seller_id'))
+				->setSignType($app->config->get('latrell-alipay-refund.sign_type'))
+				->setPrivateKeyPath($app->config->get('latrell-alipay-refund.private_key_path'))
+				->setPublicKeyPath($app->config->get('latrell-alipay-refund.public_key_path'))				
+				->setNotifyUrl($app->config->get('latrell-alipay-refund.notify_url'))
+				->setCacert($app->config->get('latrell-alipay-refund.cacert'));
+			return $alipay;
+		});			
 	}
 
 	/**
@@ -68,7 +87,8 @@ class AlipayServiceProvider extends ServiceProvider
 	{
 		return [
 			'alipay.mobile',
-			'alipay.web'
+			'alipay.web',
+			'alipay.refund',
 		];
 	}
 }

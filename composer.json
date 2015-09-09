@@ -1,12 +1,12 @@
 {
-    "name": "latrell/alipay",
-    "description": "支付宝SDK在Laravel5封装包。",
-    "keywords": ["L5", "Laravel 5", "Laravel", "Alipay", "Alipay SDK"],
+    "name": "waymen/alipay",
+    "description": "支付宝SDK在Laravel5封装包(包括退款)。",
+    "keywords": ["L5", "Laravel 5", "Laravel", "Alipay", "Alipay SDK", "Refund"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Latrell Chan",
-            "email": "i@latrell.me"
+            "name": "waymen",
+            "email": "liuwm91@gmail.com"
         }
     ],
     "require": {
@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Latrell\\Alipay\\": "src/Latrell/Alipay/"
+            "Waymen\\Alipay\\": "src/Waymen/Alipay/"
         }
     },
     "minimum-stability": "stable"
