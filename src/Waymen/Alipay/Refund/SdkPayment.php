@@ -105,15 +105,15 @@ class SdkPayment
 		if (! empty($data['notify_id'])) {
 			$response_txt = $this->getResponse($data['notify_id']);
 		}
-		return true;
+
 		// 验证
 		// $response_txt的结果不是true，与服务器设置问题、合作身份者ID、notify_id一分钟失效有关
 		// isSign的结果不是true，与安全校验码、请求时的参数格式（如：带自定义参数等）、编码格式有关
-		// if (preg_match('/true$/i', $response_txt) && $is_sign) {
-		// 	return true;
-		// } else {
-		// 	return false;
-		// }
+		if (preg_match('/true$/i', $response_txt) && $is_sign) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public function setRefundDate($refund_date)
