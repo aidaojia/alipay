@@ -1,5 +1,5 @@
 <?php
-namespace Latrell\Alipay\Web;
+namespace Waymen\Alipay\Web;
 
 class SdkPayment
 {

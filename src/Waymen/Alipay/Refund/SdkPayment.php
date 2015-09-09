@@ -1,5 +1,5 @@
 <?php
-namespace Latrell\Alipay\Refund;
+namespace Waymen\Alipay\Refund;
 
 use Log;
 
