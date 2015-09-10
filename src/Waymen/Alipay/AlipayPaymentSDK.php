@@ -3,7 +3,7 @@ namespace Waymen\Alipay;
 
 use Log;
 
-class SdkPayment
+class AlipayPaymentSdk
 {
 	private $alipay_gateway_new = 'https://mapi.alipay.com/gateway.do?';
 
