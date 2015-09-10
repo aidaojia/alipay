@@ -25,9 +25,25 @@ class AlipayPaymentSdk
 
 	private $notify_url;
 
+	private $out_trade_no;//商户网站唯一订单号
+
+	private $subject;//商品名称
+
+	private $payment_type = 1;//支付类型
+
+	private $total_fee;//总金额
+
+	private $body;//商品详情
+
+	// private $show_url;
+
+	// private $anti_phishing_key;
+
+	// private $exter_invoke_ip;	
+
 	private $seller_email;//卖家支付宝帐户
 
-	private $seller_id;
+	private $seller_id;//支付宝唯一用户号(以2088开头的纯16位数字)
 
 	private $refund_date;//退款当天日期
 
@@ -46,6 +62,33 @@ class AlipayPaymentSdk
 	public function __construct()
 	{
 		// $this->cacert = getcwd() . '\\cacert.pem';
+	}
+
+	/**
+	 * 取得支付链接参数
+	 * @return String 
+	 */
+	public function getPayPara()
+	{
+		$parameter = array(
+			'service' => $this->service,
+			'partner' => trim($this->partner),
+			'payment_type' => $this->payment_type,
+			'notify_url' => $this->notify_url,
+			'seller_id' => $this->seller_id,
+			'out_trade_no' => $this->out_trade_no,
+			'subject' => $this->subject,
+			'total_fee' => $this->total_fee,
+			'body' => $this->body,
+			'show_url' => $this->show_url,
+			'anti_phishing_key' => $this->anti_phishing_key,
+			'exter_invoke_ip' => $this->exter_invoke_ip,
+			'_input_charset' => trim(strtolower($this->_input_charset))
+		);
+
+		$para = $this->buildRequestPara($parameter);
+
+		return $this->createLinkstringUrlencode($para);
 	}
 
 	/**
@@ -111,34 +154,28 @@ class AlipayPaymentSdk
 		return $this;
 	}
 
+	//退款用
 	public function setRefundDate($refund_date)
 	{
 		$this->refund_date = $refund_date;
 		return $this;
 	}
 
-	public function sellerEmail($seller_email)
-	{
-		$this->seller_email = $seller_email;
-	}
-
-	public function sellerId($seller_id)
-	{
-		$this->seller_id = $seller_id;
-	}
-
+	//退款用
 	public function setBatchNo($batch_no)
 	{
 		$this->batch_no = $batch_no;
 		return $this;
 	}
 
+	//退款用
 	public function setBatchNum($batch_num)
 	{
 		$this->batch_num = $batch_num;
 		return $this;
 	}
 
+	//退款用
 	public function setDetailData($detail_data)
 	{
 		$this->detail_data = $detail_data;
@@ -189,7 +226,6 @@ class AlipayPaymentSdk
 		return $this;
 	}
 
-
 	public function setSignType($sign_type)
 	{
 		$this->sign_type = $sign_type;
@@ -201,6 +237,26 @@ class AlipayPaymentSdk
 		$this->seller_email = $seller_email;
 		return $this;
 	}	
+
+	//手机付款用
+	public function setOutTradeNo($out_trade_no){
+		$this->out_trade_no = $out_trade_no;
+	}
+
+	//手机付款用
+	public function setTotalFee($total_fee){
+		$this->total_fee = $total_fee;
+	}
+
+	//手机付款用
+	public function setSubject($subject){
+		$this->subject = $subject;
+	}
+
+	//手机付款用
+	public function setBody($body){
+		$this->body = $body;
+	}			
 
 	/**
 	 * 生成要请求给支付宝的参数数组
