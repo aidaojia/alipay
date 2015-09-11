@@ -80,9 +80,9 @@ class AlipayPaymentSdk
 			'subject' => $this->subject,
 			'total_fee' => $this->total_fee,
 			'body' => $this->body,
-			'show_url' => $this->show_url,
-			'anti_phishing_key' => $this->anti_phishing_key,
-			'exter_invoke_ip' => $this->exter_invoke_ip,
+			// 'show_url' => $this->show_url,
+			// 'anti_phishing_key' => $this->anti_phishing_key,
+			// 'exter_invoke_ip' => $this->exter_invoke_ip,
 			'_input_charset' => trim(strtolower($this->_input_charset))
 		);
 
