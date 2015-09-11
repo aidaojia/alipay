@@ -258,6 +258,11 @@ class AlipayPaymentSdk
 		$this->body = $body;
 	}			
 
+	public function setService($service)
+	{
+		$this->service = $service;
+	}
+
 	/**
 	 * 生成要请求给支付宝的参数数组
 	 * @param $para_temp 请求前的参数数组

@@ -38,6 +38,7 @@ composer require waymen/alipay dev-master
 ```php
 	// 创建移动支付单。
 	$alipay = app('alipay');
+	$alipay->setService('mobile.securitypay.pay');//设置接口名称
 	$alipay->setSignType('RSA');//要用RSA签名
 	$alipay->setOutTradeNo('order_id');
 	$alipay->setTotalFee('order_price');
