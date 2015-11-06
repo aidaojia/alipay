@@ -35,7 +35,9 @@ class AlipayPaymentSdk
 
 	private $body;//商品详情
 
-	// private $show_url;
+	private $show_url;
+
+	private $it_b_pay = '30m';
 
 	// private $anti_phishing_key;
 
@@ -80,7 +82,8 @@ class AlipayPaymentSdk
 			'subject' => $this->subject,
 			'total_fee' => $this->total_fee,
 			'body' => $this->body,
-			// 'show_url' => $this->show_url,
+			'show_url' => $this->show_url,
+			'it_b_pay' => $this->it_b_pay,
 			// 'anti_phishing_key' => $this->anti_phishing_key,
 			// 'exter_invoke_ip' => $this->exter_invoke_ip,
 			'_input_charset' => trim(strtolower($this->_input_charset))
@@ -195,6 +198,12 @@ class AlipayPaymentSdk
 		$this->return_url = $return_url;
 		return $this;
 	}	
+
+	public function setShowUrl($show_url)
+	{
+		$this->show_url = $show_url;
+		return $this;
+	}
 
 	public function setPartner($partner)
 	{
