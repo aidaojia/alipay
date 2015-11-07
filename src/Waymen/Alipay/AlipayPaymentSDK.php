@@ -61,37 +61,36 @@ class AlipayPaymentSdk
 
 	private $cacert;
 
+	private $qr_pay_mode;
+
 	public function __construct()
 	{
 		// $this->cacert = getcwd() . '\\cacert.pem';
 	}
 
 	/**
-	 * 取得支付链接参数
+	 * 取得客户端支付链接参数
 	 * @return String 
 	 */
 	public function getPayPara()
 	{
 		$parameter = array(
-			'service' => $this->service,
 			'partner' => trim($this->partner),
-			'payment_type' => $this->payment_type,
-			'notify_url' => $this->notify_url,
 			'seller_id' => $this->seller_id,
 			'out_trade_no' => $this->out_trade_no,
 			'subject' => $this->subject,
-			'total_fee' => $this->total_fee,
 			'body' => $this->body,
-			'show_url' => $this->show_url,
+			'total_fee' => $this->total_fee,
+			'notify_url' => $this->notify_url,
+			'service' => $this->service,
+			'payment_type' => $this->payment_type,
+			'_input_charset' => trim(strtolower($this->_input_charset)),
 			'it_b_pay' => $this->it_b_pay,
-			// 'anti_phishing_key' => $this->anti_phishing_key,
-			// 'exter_invoke_ip' => $this->exter_invoke_ip,
-			'_input_charset' => trim(strtolower($this->_input_charset))
+			'show_url' => $this->show_url,
 		);
 
-		$para = $this->buildRequestPara($parameter);
-
-		return $this->createLinkstringUrlencode($para);
+		$para = $this->buildRequestPara($parameter, true);//带签名参数的值需要加双引号
+		return $this->createMobilestringUrlencode($para);
 	}
 
 	/**
@@ -107,15 +106,44 @@ class AlipayPaymentSdk
 				"notify_url" => $this->notify_url,
 				"seller_id"	=> $this->seller_id,
 				"seller_email" => $this->seller_email,
-				"refund_date"	=> $this->refund_date,
-				"batch_no"	=> $this->batch_no,
-				"batch_num"	=> $this->batch_num,
-				"detail_data"	=> $this->detail_data,
-				"_input_charset"	=> trim(strtolower($this->_input_charset))
-		);			
+				"refund_date" => $this->refund_date,
+				"batch_no" => $this->batch_no,
+				"batch_num" => $this->batch_num,
+				"detail_data" => $this->detail_data,
+				"_input_charset" => trim(strtolower($this->_input_charset))
+		);
 
 		$para = $this->buildRequestPara($parameter);
 		return $this->alipay_gateway_new.$this->createLinkstringUrlencode($para);
+	}
+
+	/**
+	 * 取得支付链接
+	 */
+	public function getPayLink()
+	{
+		$parameter = array(
+			'service' => 'create_direct_pay_by_user',
+			'partner' => $this->partner,
+			'payment_type' => $this->payment_type,
+			'notify_url' => $this->notify_url,
+			'return_url' => $this->return_url,
+			'seller_email' => $this->seller_id,
+			'out_trade_no' => $this->out_trade_no,
+			'subject' => $this->subject,
+			'total_fee' => $this->total_fee,
+			'body' => $this->body,
+			'it_b_pay' => $this->it_b_pay,
+			'show_url' => $this->show_url,
+			// 'anti_phishing_key' => $this->anti_phishing_key,
+			// 'exter_invoke_ip' => $this->exter_invoke_ip,
+			'_input_charset' => strtolower($this->_input_charset),
+			'qr_pay_mode' => $this->qr_pay_mode
+		);
+
+		$para = $this->buildRequestPara($parameter);
+
+		return $this->__gateway_new . $this->createLinkstringUrlencode($para);
 	}
 
 	/**
@@ -272,21 +300,27 @@ class AlipayPaymentSdk
 		$this->service = $service;
 	}
 
+	//未付款交易的超时时间
+	public function setItBPay($it_b_pay)
+	{
+		$this->it_b_pay = $it_b_pay;
+	}
+
 	/**
 	 * 生成要请求给支付宝的参数数组
 	 * @param $para_temp 请求前的参数数组
 	 * @return 要请求的参数数组
 	 */
-	private function buildRequestPara($para_temp)
+	private function buildRequestPara($para_temp, $doubleQuotation = false)
 	{
 		//除去待签名参数数组中的空值和签名参数
 		$para_filter = $this->paraFilter($para_temp);
 
 		//对待签名参数数组排序
 		$para_sort = $this->argSort($para_filter);
-
+		
 		//生成签名结果
-		$mysign = $this->buildRequestMysign($para_sort);
+		$mysign = $this->buildRequestMysign($para_sort, $doubleQuotation);
 
 		//签名结果与签名方式加入请求提交参数组中
 		$para_sort['sign'] = $mysign;
@@ -299,10 +333,10 @@ class AlipayPaymentSdk
 	 * @param $para_sort 已排序要签名的数组
 	 * return 签名结果字符串
 	 */
-	private function buildRequestMysign($para_sort)
+	private function buildRequestMysign($para_sort, $doubleQuotation = false)
 	{
 		//把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
-		$prestr = $this->createLinkstring($para_sort);
+		$prestr = $this->createLinkstring($para_sort, $doubleQuotation);
 		$mysign = '';
 		switch (strtoupper(trim($this->sign_type))) {
 			case 'MD5':
@@ -408,6 +442,7 @@ class AlipayPaymentSdk
 		$res = openssl_pkey_get_private($priKey);
 		openssl_sign($data, $sign, $res);
 		openssl_free_key($res);
+
 		//base64编码
 		$sign = base64_encode($sign);
 		return $sign;
@@ -416,13 +451,18 @@ class AlipayPaymentSdk
 	/**
 	 * 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
 	 * @param $para 需要拼接的数组
+	 * @param boolean $doubleQuotation 需不需要加双引号(给ios客户端支付用的时候要加)
 	 * return 拼接完成以后的字符串
 	 */
-	private function createLinkstring($para)
+	private function createLinkstring($para, $doubleQuotation = false)
 	{
 		$arg = '';
 		while ((list ($key, $val) = each($para)) == true) {
-			$arg .= $key . '=' . $val . '&';
+			if ($doubleQuotation) {
+				$arg .= $key . "=\"" . $val . "\"&";
+			} else {
+				$arg .= $key . '=' . $val . '&';
+			}
 		}
 		//去掉最后一个&字符
 		$arg = substr($arg, 0, count($arg) - 2);
@@ -454,6 +494,29 @@ class AlipayPaymentSdk
 			$arg = stripslashes($arg);
 		}
 
+		return $arg;
+	}
+
+	/**
+	 * 准备好签了名的字符串给ios客户端支付(参数的值带双引号)
+	 * @param $para 需要拼接的数组
+	 * return 拼接完成以后的字符串
+	 */
+	private function createMobilestringUrlencode($para)
+	{
+		$arg = '';
+		$sign = $para['sign'];
+		unset($para['sign']);
+		unset($para['sign_type']);
+		while ((list ($key, $val) = each($para)) == true) {
+			$arg .= $key . "=\"" . $val . "\"&";
+		}
+
+		$arg = $arg."sign=\"".urlencode($sign)."\"&sign_type=\"RSA\"";
+		//如果存在转义字符，那么去掉转义
+		if (get_magic_quotes_gpc()) {
+			$arg = stripslashes($arg);
+		}
 		return $arg;
 	}
 
