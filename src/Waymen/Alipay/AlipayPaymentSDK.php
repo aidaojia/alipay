@@ -143,7 +143,7 @@ class AlipayPaymentSdk
 
 		$para = $this->buildRequestPara($parameter);
 
-		return $this->__gateway_new . $this->createLinkstringUrlencode($para);
+		return $this->alipay_gateway_new . $this->createLinkstringUrlencode($para);
 	}
 
 	/**
